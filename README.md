@@ -18,21 +18,13 @@ A desktop-based system monitoring application built with **Python**, **Tkinter**
 
 ## Screenshots
 
-```
-┌─────────────────────────────────────────────────┐
-│  ⚡ SYSTEM PERFORMANCE ANALYSER                 │
-├─────────────────────────────────────────────────┤
-│  🖥 CPU Usage    │  💾 RAM Usage               │
-│     35.2%        │     62.1%                   │
-│  ████░░░░░░      │  ██████░░░░                 │
-├──────────────────┼─────────────────────────────┤
-│  💿 Disk Usage   │  🔋 Battery                 │
-│     48.0%        │     81.0%                   │
-│  █████░░░░░      │  ████████░░                 │
-├─────────────────────────────────────────────────┤
-│  [Refresh] [Save Log] [History] [Graph] [Report]│
-└─────────────────────────────────────────────────┘
-```
+![System Performance Analyser Dashboard](assets/dashboard.png)
+
+![Performance History](assets/performance-history.png)
+
+![Performance Graph](assets/performance-graph.png)
+
+![Generate Report](assets/generate-report.png)
 
 ## Tech Stack
 
