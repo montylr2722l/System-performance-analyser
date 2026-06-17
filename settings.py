@@ -3,18 +3,29 @@
 import json
 import os
 
-from config import DB_CONFIG
+from paths import get_data_path
 
-SETTINGS_FILE = os.path.join(os.path.dirname(__file__), "db_settings.json")
+DB_CONFIG = {
+    "host": "localhost",
+    "port": 3306,
+    "user": "root",
+    "password": "password",
+    "database": "system_performance",
+}
+
+SETTINGS_FILE = get_data_path("db_settings.json")
 
 
 def get_db_config():
-    """Return DB config, preferring saved settings over config.py defaults."""
+    """Return DB config, preferring saved settings over defaults."""
     config = DB_CONFIG.copy()
     if os.path.exists(SETTINGS_FILE):
         with open(SETTINGS_FILE, "r", encoding="utf-8") as file:
             saved = json.load(file)
-        config.update(saved)
+        for key, value in saved.items():
+            if key == "password" and not value:
+                continue
+            config[key] = value
     return config
 
 

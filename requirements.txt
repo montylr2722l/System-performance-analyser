@@ -1,5 +1,4 @@
 psutil>=5.9.0
 mysql-connector-python>=8.0.0
-pandas>=2.0.0
-matplotlib>=3.7.0
 fpdf2>=2.7.0
+Flask>=3.0.0

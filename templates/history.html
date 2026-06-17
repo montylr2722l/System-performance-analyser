@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Performance History</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="min-h-screen bg-zinc-950 text-zinc-100">
+  <main class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <header class="flex flex-col gap-4 border-b border-zinc-800 pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-sm font-medium uppercase tracking-wide text-cyan-300">Saved Logs</p>
+        <h1 class="mt-2 text-3xl font-bold tracking-normal text-white">Performance History</h1>
+      </div>
+      <nav class="flex flex-wrap gap-2">
+        <a class="nav-link" href="{{ url_for('index') }}">Dashboard</a>
+        <a class="nav-link active" href="{{ url_for('history') }}">History</a>
+        <a class="nav-link" href="{{ url_for('graph') }}">Graph</a>
+        <a class="nav-link" href="{{ url_for('settings') }}">Settings</a>
+      </nav>
+    </header>
+
+    {% if error %}
+      <div class="mt-6 rounded-md border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-100">
+        {{ error }}
+        <a class="ml-2 underline" href="{{ url_for('settings') }}">Fix in Settings</a>
+      </div>
+    {% endif %}
+
+    <section class="panel mt-6 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date & Time</th><th>CPU %</th><th>RAM %</th><th>Disk %</th>
+              <th>Battery %</th><th>Sent MB</th><th>Received MB</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in logs %}
+              <tr>
+                <td>{{ row.log_time.strftime("%d-%m-%Y %I:%M %p") }}</td>
+                <td>{{ "%.1f"|format(row.cpu_usage) }}</td>
+                <td>{{ "%.1f"|format(row.ram_usage) }}</td>
+                <td>{{ "%.1f"|format(row.disk_usage) }}</td>
+                <td>{{ "%.0f"|format(row.battery) if row.battery is not none else "N/A" }}</td>
+                <td>{{ "%.1f"|format(row.bytes_sent / 1048576) }}</td>
+                <td>{{ "%.1f"|format(row.bytes_received / 1048576) }}</td>
+              </tr>
+            {% else %}
+              <tr><td colspan="7">No records found. Save a log from the dashboard first.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

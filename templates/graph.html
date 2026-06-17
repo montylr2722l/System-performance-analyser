@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Performance Graph</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="min-h-screen bg-zinc-950 text-zinc-100">
+  <main class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+    <header class="flex flex-col gap-4 border-b border-zinc-800 pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-sm font-medium uppercase tracking-wide text-cyan-300">Trends</p>
+        <h1 class="mt-2 text-3xl font-bold tracking-normal text-white">Performance Graph</h1>
+      </div>
+      <nav class="flex flex-wrap gap-2">
+        <a class="nav-link" href="{{ url_for('index') }}">Dashboard</a>
+        <a class="nav-link" href="{{ url_for('history') }}">History</a>
+        <a class="nav-link active" href="{{ url_for('graph') }}">Graph</a>
+        <a class="nav-link" href="{{ url_for('settings') }}">Settings</a>
+      </nav>
+    </header>
+
+    <section class="panel mt-6 flex min-h-[520px] flex-1 flex-col">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-base font-semibold text-white">CPU, RAM, and Disk Usage</h2>
+        <button id="reload-chart-btn" class="secondary-btn" type="button">Reload</button>
+      </div>
+      <div class="mt-4 min-h-0 flex-1">
+        <canvas id="performance-chart"></canvas>
+      </div>
+      <p id="chart-status" class="mt-4 text-sm text-zinc-400">Loading chart...</p>
+    </section>
+  </main>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

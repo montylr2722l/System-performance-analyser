@@ -5,6 +5,8 @@ from datetime import datetime
 
 from fpdf import FPDF
 
+from paths import get_app_dir
+
 
 def _build_report_text(stats, period="daily"):
     """Build report content as plain text."""
@@ -47,8 +49,13 @@ def _build_report_text(stats, period="daily"):
     )
 
 
-def generate_txt_report(stats, output_dir="reports"):
+def _reports_dir():
+    return os.path.join(get_app_dir(), "reports")
+
+
+def generate_txt_report(stats, output_dir=None):
     """Save report as a TXT file."""
+    output_dir = output_dir or _reports_dir()
     os.makedirs(output_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filepath = os.path.join(output_dir, f"performance_report_{timestamp}.txt")
@@ -60,8 +67,9 @@ def generate_txt_report(stats, output_dir="reports"):
     return filepath, content
 
 
-def generate_pdf_report(stats, output_dir="reports"):
+def generate_pdf_report(stats, output_dir=None):
     """Save report as a PDF file."""
+    output_dir = output_dir or _reports_dir()
     os.makedirs(output_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filepath = os.path.join(output_dir, f"performance_report_{timestamp}.pdf")

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>System Performance Analyser</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="min-h-screen bg-zinc-950 text-zinc-100">
+  <main class="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+    <header class="flex flex-col gap-4 border-b border-zinc-800 pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-sm font-medium uppercase tracking-wide text-cyan-300">Flask + Tailwind Dashboard</p>
+        <h1 class="mt-2 text-3xl font-bold tracking-normal text-white">System Performance Analyser</h1>
+        <p class="mt-2 text-sm text-zinc-400">Real-time CPU, RAM, disk, network, battery, and process monitoring.</p>
+      </div>
+      <nav class="flex flex-wrap gap-2">
+        <a class="nav-link active" href="{{ url_for('index') }}">Dashboard</a>
+        <a class="nav-link" href="{{ url_for('history') }}">History</a>
+        <a class="nav-link" href="{{ url_for('graph') }}">Graph</a>
+        <a class="nav-link" href="{{ url_for('settings') }}">Settings</a>
+      </nav>
+    </header>
+
+    <section class="grid gap-3 md:grid-cols-4">
+      <div class="info-strip"><span>OS</span><strong id="system-os">--</strong></div>
+      <div class="info-strip"><span>Host</span><strong id="system-host">--</strong></div>
+      <div class="info-strip"><span>Uptime</span><strong id="system-uptime">--</strong></div>
+      <div class="info-strip"><span>Health</span><strong id="health-pill">--</strong></div>
+    </section>
+
+    {% if not db_status.ok %}
+      <div class="rounded-md border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100">
+        MySQL connection issue: {{ db_status.message }}
+        <a class="ml-2 underline" href="{{ url_for('settings') }}">Fix in Settings</a>
+      </div>
+    {% endif %}
+
+    <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <article class="metric-card health-card">
+        <span class="metric-label">Laptop Health</span>
+        <strong id="health-score" class="metric-value text-lime-300">--</strong>
+        <div class="meter"><span id="health-bar"></span></div>
+        <p id="health-detail" class="metric-detail">--</p>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">CPU Usage</span>
+        <strong id="cpu-value" class="metric-value text-emerald-300">--</strong>
+        <div class="meter"><span id="cpu-bar"></span></div>
+        <p id="cpu-detail" class="metric-detail">--</p>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">RAM Usage</span>
+        <strong id="ram-value" class="metric-value text-sky-300">--</strong>
+        <div class="meter"><span id="ram-bar"></span></div>
+        <p id="ram-detail" class="metric-detail">--</p>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Disk Usage</span>
+        <strong id="disk-value" class="metric-value text-violet-300">--</strong>
+        <div class="meter"><span id="disk-bar"></span></div>
+        <p id="disk-detail" class="metric-detail">--</p>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Battery</span>
+        <strong id="battery-value" class="metric-value text-orange-300">--</strong>
+        <div class="meter"><span id="battery-bar"></span></div>
+        <p id="battery-detail" class="metric-detail">--</p>
+      </article>
+    </section>
+
+    <section class="grid gap-4 lg:grid-cols-[1fr_1.25fr]">
+      <div class="panel">
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="text-base font-semibold text-white">Network Activity</h2>
+          <span id="last-updated" class="text-xs text-zinc-500">--</span>
+        </div>
+        <dl class="mt-5 grid gap-4 sm:grid-cols-2">
+          <div><dt class="text-sm text-zinc-400">Bytes Sent</dt><dd id="network-sent" class="mt-1 text-2xl font-semibold text-cyan-200">--</dd></div>
+          <div><dt class="text-sm text-zinc-400">Bytes Received</dt><dd id="network-received" class="mt-1 text-2xl font-semibold text-lime-200">--</dd></div>
+        </dl>
+        <div class="mt-6 flex flex-wrap gap-2">
+          <button id="refresh-btn" class="primary-btn" type="button">Refresh</button>
+          <button id="save-log-btn" class="success-btn" type="button">Save Log</button>
+          <a class="secondary-btn" href="{{ url_for('download_report', period='daily', file_type='txt') }}">Daily TXT</a>
+          <a class="secondary-btn" href="{{ url_for('download_report', period='weekly', file_type='pdf') }}">Weekly PDF</a>
+        </div>
+        <p id="status-message" class="mt-4 text-sm text-zinc-400">Ready</p>
+      </div>
+
+      <div class="panel overflow-hidden">
+        <h2 class="text-base font-semibold text-white">Top Processes</h2>
+        <div class="mt-4 overflow-x-auto">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>PID</th><th>CPU</th><th>Memory</th></tr></thead>
+            <tbody id="process-table"><tr><td colspan="4">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

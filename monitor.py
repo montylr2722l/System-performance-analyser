@@ -82,6 +82,129 @@ def get_battery_info():
     }
 
 
+def get_system_info():
+    """Collect basic system information."""
+    boot = psutil.boot_time()
+    from datetime import datetime
+
+    uptime_seconds = datetime.now().timestamp() - boot
+    hours, remainder = divmod(int(uptime_seconds), 3600)
+    minutes, _ = divmod(remainder, 60)
+
+    return {
+        "os": f"{platform.system()} {platform.release()}",
+        "hostname": platform.node(),
+        "processor": platform.processor() or "Unknown CPU",
+        "uptime": f"{hours}h {minutes}m",
+    }
+
+
+def get_top_processes(limit=8):
+    """Return top processes sorted by CPU usage."""
+    processes = []
+    logical_cpus = psutil.cpu_count(logical=True) or 1
+    for proc in psutil.process_iter(["pid", "name"]):
+        try:
+            with proc.oneshot():
+                cpu = proc.cpu_percent(interval=0)
+                mem = proc.memory_percent()
+                name = proc.info.get("name") or proc.name()
+            if proc.pid == 0 or (name and name.lower() == "system idle process"):
+                continue
+            normalized_cpu = min(cpu / logical_cpus, 100)
+            processes.append({
+                "pid": proc.pid,
+                "name": name,
+                "cpu_percent": normalized_cpu,
+                "raw_cpu_percent": cpu,
+                "memory_percent": mem,
+            })
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            continue
+
+    processes.sort(
+        key=lambda p: (p["cpu_percent"] or 0, p["memory_percent"] or 0),
+        reverse=True,
+    )
+    return processes[:limit]
+
+
+def get_health_score(metrics):
+    """Return an overall laptop health score from current performance pressure."""
+    risk = 0
+    factors = []
+
+    cpu = metrics["cpu_usage"]
+    ram = metrics["ram_usage"]
+    disk = metrics["disk_usage"]
+    battery = metrics.get("battery")
+    on_battery = metrics.get("battery_charging") is False
+
+    if cpu >= 90:
+        risk += 30
+        factors.append("CPU usage is critical")
+    elif cpu >= 70:
+        risk += 18
+        factors.append("CPU usage is high")
+    elif cpu >= 50:
+        risk += 8
+        factors.append("CPU usage is moderate")
+
+    if ram >= 90:
+        risk += 30
+        factors.append("RAM usage is critical")
+    elif ram >= 75:
+        risk += 18
+        factors.append("RAM usage is high")
+    elif ram >= 60:
+        risk += 8
+        factors.append("RAM usage is moderate")
+
+    if disk >= 90:
+        risk += 22
+        factors.append("Disk is nearly full")
+    elif disk >= 80:
+        risk += 12
+        factors.append("Disk space is getting tight")
+    elif disk >= 70:
+        risk += 6
+        factors.append("Disk usage is moderate")
+
+    if battery is not None and on_battery:
+        if battery <= 15:
+            risk += 18
+            factors.append("Battery is very low")
+        elif battery <= 30:
+            risk += 10
+            factors.append("Battery is low")
+
+    score = max(0, min(100, 100 - risk))
+    if score >= 85:
+        label = "Excellent"
+        risk_level = "Low Risk"
+        summary = "Laptop is in good condition."
+    elif score >= 70:
+        label = "Good"
+        risk_level = "Low-Medium Risk"
+        summary = "Laptop is healthy with some resource pressure."
+    elif score >= 50:
+        label = "Fair"
+        risk_level = "Medium Risk"
+        summary = "Laptop is usable, but performance pressure is noticeable."
+    else:
+        label = "Poor"
+        risk_level = "High Risk"
+        summary = "Laptop is under heavy load and may feel slow."
+
+    return {
+        "score": score,
+        "label": label,
+        "risk_level": risk_level,
+        "summary": summary,
+        "factors": factors or ["No major performance risk detected"],
+    }
+
+
 def collect_all_metrics():
     """Collect all system performance metrics."""
     cpu = get_cpu_info()
@@ -90,7 +213,7 @@ def collect_all_metrics():
     network = get_network_info()
     battery = get_battery_info()
 
-    return {
+    metrics = {
         "cpu_usage": cpu["usage"],
         "cpu_cores": cpu["cores"],
         "cpu_logical_cores": cpu["logical_cores"],
@@ -111,3 +234,5 @@ def collect_all_metrics():
         "battery_status": battery["status"],
         "battery_charging": battery["charging"],
     }
+    metrics["health"] = get_health_score(metrics)
+    return metrics
